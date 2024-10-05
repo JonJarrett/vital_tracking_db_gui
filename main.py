@@ -3,6 +3,7 @@ from tkinter import messagebox
 from datetime import datetime
 import sqlite3
 
+# create break when no value submitted
 
 def submit_data():
     date = date_entry.get()
