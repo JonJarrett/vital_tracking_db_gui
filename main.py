@@ -3,7 +3,6 @@ from tkinter import messagebox
 from datetime import datetime
 import sqlite3
 
-# create break when no value submitted
 
 def submit_data():
     date = date_entry.get()
@@ -14,33 +13,113 @@ def submit_data():
     bp = bp_entry.get()
 
     if date == current_date:
-        print(date, weight, fat, sugar, pulse, bp)
+        conn = sqlite3.connect('data.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT exists(SELECT 1 FROM vitals_db WHERE date = '" + date + "') AS row_exists;")
+        row_exists = cursor.fetchone()
 
+        if 1 in row_exists:
+            messagebox.showerror('Error', 'You have already entered your vitals for today. If you would like to '
+                                          'update today\'s vitals pleas use "UPDATE" instead.')
+            return
+        else:
+            submitted_vitals = [weight, fat, sugar, pulse, bp]
+            blank_value = 0
+            for v in submitted_vitals:
+                if v == '0':
+                    blank_value += 1
+            if blank_value == 0:
+                conn = sqlite3.connect('data.db')
+                table_create_query = '''CREATE TABLE IF NOT EXISTS vitals_db (date TEXT, weight TEXT, fat TEXT,
+                     sugar TEXT, pulse TEXT, bp TEXT)'''
+                conn.execute(table_create_query)
+
+                data_insert_query = '''INSERT INTO vitals_db (date, weight, fat, sugar, pulse, bp)
+                 VALUES (?, ?, ?, ?, ?, ?)'''
+                data_insert_tuple = (date, weight, fat, sugar, pulse, bp)
+                cursor = conn.cursor()
+                cursor.execute(data_insert_query, data_insert_tuple)
+                conn.commit()
+                conn.close()
+
+                messagebox.showinfo('Success!', 'Your data has been recorded.')
+
+            if blank_value > 0:
+                messagebox.showerror('Blank value detected', 'Please fill in form completely')
+                return
+
+    else:
+        messagebox.showerror('Error', 'You entered a date that is not today\'s date. '
+                                      'To update a previous entry please use "Update" instead.')
+
+
+def update_data():
+    date = date_entry.get()
+    weight = weight_entry.get()
+    fat = fat_entry.get()
+    sugar = sugar_entry.get()
+    pulse = pulse_entry.get()
+    bp = bp_entry.get()
+
+    conn = sqlite3.connect('data.db')
+    cursor = conn.cursor()
+    cursor.execute(f"SELECT exists(SELECT 1 FROM vitals_db WHERE date = '" + date + "') AS row_exists;")
+    row_exists = cursor.fetchone()
+
+    if 1 in row_exists:
         submitted_vitals = [weight, fat, sugar, pulse, bp]
         blank_value = 0
         for v in submitted_vitals:
             if v == '0':
                 blank_value += 1
-            print(blank_value)
+        if blank_value == 0:
+            conn = sqlite3.connect('data.db')
+            table_create_query = '''CREATE TABLE IF NOT EXISTS vitals_db (date TEXT, weight TEXT, fat TEXT,
+                             sugar TEXT, pulse TEXT, bp TEXT)'''
+            conn.execute(table_create_query)
+
+            data_insert_query = '''INSERT INTO vitals_db (date, weight, fat, sugar, pulse, bp)
+                         VALUES (?, ?, ?, ?, ?, ?)'''
+            data_insert_tuple = (date, weight, fat, sugar, pulse, bp)
+            delete_stmt = (f'delete FROM vitals_db where date = "' + date + '"')
+            cursor = conn.cursor()
+            cursor.execute(delete_stmt)
+            cursor.execute(data_insert_query, data_insert_tuple)
+            conn.commit()
+            conn.close()
+
+            messagebox.showinfo('Success!', 'Your data has been recorded.')
 
         if blank_value > 0:
             messagebox.showerror('Blank value detected', 'Please fill in form completely')
             return
-        elif blank_value == 0:
-            messagebox.showinfo('Success!', 'Your data has been recorded.')
-    else:
-        messagebox.showerror('Error', 'You entered a date that is not today\'s date. '
-                                      'To update a previous entry please use "Update".')
-    conn = sqlite3.connect('data.db')
-    table_create_query = '''CREATE TABLE IF NOT EXISTS vitals_db (date TEXT, weight TEXT, fat TEXT,
-     sugar TEXT, pulse TEXT, bp TEXT)'''
-    conn.execute(table_create_query)
 
-    data_insert_query = '''INSERT INTO vitals_db (date, weight, fat, sugar, pulse, bp) VALUES (?, ?, ?, ?, ?, ?)'''
-    data_insert_tuple = (date, weight, fat, sugar, pulse, bp)
-    cursor = conn.cursor()
-    cursor.execute(data_insert_query, data_insert_tuple)
-    conn.commit()
+    else:
+        submitted_vitals = [weight, fat, sugar, pulse, bp]
+        blank_value = 0
+        for v in submitted_vitals:
+            if v == '0':
+                blank_value += 1
+        if blank_value == 0:
+            conn = sqlite3.connect('data.db')
+            table_create_query = '''CREATE TABLE IF NOT EXISTS vitals_db (date TEXT, weight TEXT, fat TEXT,
+                                     sugar TEXT, pulse TEXT, bp TEXT)'''
+            conn.execute(table_create_query)
+
+            data_insert_query = '''INSERT INTO vitals_db (date, weight, fat, sugar, pulse, bp)
+                                 VALUES (?, ?, ?, ?, ?, ?)'''
+            data_insert_tuple = (date, weight, fat, sugar, pulse, bp)
+            cursor = conn.cursor()
+            cursor.execute(data_insert_query, data_insert_tuple)
+            conn.commit()
+            conn.close()
+
+            messagebox.showinfo('Success!', 'Your data has been recorded.')
+
+        if blank_value > 0:
+            messagebox.showerror('Blank value detected', 'Please fill in form completely')
+            return
+
     conn.close()
 
 
@@ -100,7 +179,7 @@ if __name__ == '__main__':
     submit.config(font=48)
     submit.pack(pady=30)
 
-    update = tkinter.Button(window, text='UPDATE', bg='#a9a9a9')
+    update = tkinter.Button(window, text='UPDATE', bg='#a9a9a9', command=update_data)
     update.config(font=48)
     update.pack()
 
