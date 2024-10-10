@@ -60,10 +60,6 @@ def submit_data():
                     blank_value += 1
             if blank_value == 0:
                 conn = sqlite3.connect('data.db')
-                table_create_query = '''CREATE TABLE IF NOT EXISTS vitals_db (date TEXT, weight TEXT, fat TEXT,
-                     sugar TEXT, pulse TEXT, bp TEXT)'''
-                conn.execute(table_create_query)
-
                 data_insert_query = '''INSERT INTO vitals_db (date, weight, fat, sugar, pulse, bp)
                  VALUES (?, ?, ?, ?, ?, ?)'''
                 data_insert_tuple = (date, weight, fat, sugar, pulse, bp)
@@ -104,10 +100,6 @@ def update_data():
                 blank_value += 1
         if blank_value == 0:
             conn = sqlite3.connect('data.db')
-            table_create_query = '''CREATE TABLE IF NOT EXISTS vitals_db (date TEXT, weight TEXT, fat TEXT,
-                             sugar TEXT, pulse TEXT, bp TEXT)'''
-            conn.execute(table_create_query)
-
             data_insert_query = '''INSERT INTO vitals_db (date, weight, fat, sugar, pulse, bp)
                          VALUES (?, ?, ?, ?, ?, ?)'''
             data_insert_tuple = (date, weight, fat, sugar, pulse, bp)
@@ -132,10 +124,6 @@ def update_data():
                 blank_value += 1
         if blank_value == 0:
             conn = sqlite3.connect('data.db')
-            table_create_query = '''CREATE TABLE IF NOT EXISTS vitals_db (date TEXT, weight TEXT, fat TEXT,
-                                     sugar TEXT, pulse TEXT, bp TEXT)'''
-            conn.execute(table_create_query)
-
             data_insert_query = '''INSERT INTO vitals_db (date, weight, fat, sugar, pulse, bp)
                                  VALUES (?, ?, ?, ?, ?, ?)'''
             data_insert_tuple = (date, weight, fat, sugar, pulse, bp)
@@ -266,5 +254,12 @@ if __name__ == '__main__':
     table.column('#5', anchor='center', width=100)
     table.heading('#5', anchor='center', text='Blood Pressure')
     table.pack()
+
+    connect = sqlite3.connect('data.db')
+    table_create_query = '''CREATE TABLE IF NOT EXISTS vitals_db (date TEXT, weight TEXT, fat TEXT,
+                         sugar TEXT, pulse TEXT, bp TEXT)'''
+    connect.execute(table_create_query)
+    connect.commit()
+    connect.close()
 
     window.mainloop()
